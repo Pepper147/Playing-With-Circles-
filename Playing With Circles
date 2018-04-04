@@ -1,0 +1,63 @@
+#include <FastLED.h>
+#include <LEDMatrix.h>
+
+#define LED_PIN        7                             //Data Pin for the Arduino
+#define COLOR_ORDER    GRB                           //Color order for WS2812B LED strip
+#define CHIPSET        WS2812B                       //Model name for LED strip
+#define MATRIX_WIDTH   24                            // Set this negative if physical led 0 is opposite to where you want logical 0
+#define MATRIX_HEIGHT  24                            // Set this negative if physical led 0 is opposite to where you want logical 0
+#define MATRIX_TYPE    HORIZONTAL_ZIGZAG_MATRIX      // See top of LEDMatrix.h for matrix wiring types
+#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))   //Fast define that will calculate the exact size of any array
+#define NUM_LEDS      (MATRIX_WIDTH * MATRIX_HEIGHT) //Defining the total number of LEDS
+#define BRIGHTNESS 10                                //Safety Brightness setting just incase i forget to add the power safety function
+
+cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
+
+//Globals
+uint8_t angle = 0; 
+
+
+void setup()
+{
+  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds[0], leds.Size());
+  FastLED.setBrightness(BRIGHTNESS);
+ // set_max_power_in_volts_and_milliamps(5, 12000);       
+  //Safety procotion, stating that i am using 5V 12A power supply (Max)
+  
+  Serial.begin(9600);
+  Serial.println("The rogram has started");
+  FastLED.clear(true);
+  delay(500);
+  FastLED.showColor(CRGB::Red);
+  delay(1000);
+  //currentPalette = RainbowColors_p;
+  //currentBlending = LINEARBLEND;
+
+}
+void loop(){
+  randCircleFillColor();
+}
+void randCircleFillColor()
+//****************************************************************************************
+//Function that will place a circle at the very center of the Matrix.  
+//A for loop is used to increment the radious value by one each time until it has completely filled the Matrix. 
+//Another loop so that when the circle has the Matrix completely filled, we can remove the circle.
+//Note: That we need to add the randR, randG, randB to the seconds for loop so that we remain in the same color
+//as we are shrinking 
+//****************************************************************************************
+  {
+    uint8_t randR = random8(0, 255);
+    uint8_t randG = random8(0, 255);
+    uint8_t randB = random8(0, 255);
+    
+    for(int r = 0; r <=leds.Width(); r++){
+       leds.DrawFilledCircle(10, 11, r, CRGB(randR, randG, randB));
+       FastLED.delay(20);
+       }
+     for(int r = leds.Width(); r >= 0; r--){
+      leds.DrawFilledCircle(10, 11, r, CRGB(randR, randG, randB));
+      FastLED.delay(20);
+      FastLED.clear();
+     }
+  }
+
